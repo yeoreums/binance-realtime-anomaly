@@ -8,14 +8,31 @@ trade_count = 0
 total_volume = 0.0
 printed_sample = False
 
+window_start_time = None
+window_trade_count = 0
+window_volume = 0.0
+WINDOW_SIZE = 10  # seconds
+
 def on_message(ws, message):
     global trade_count, printed_sample, total_volume
+    global window_start_time, window_trade_count, window_volume
+
     data = json.loads(message)
     trade_count += 1
     
     price = float(data["p"])
     quantity = float(data["q"])
+    trade_time = data["T"] / 1000  # convert ms -> seconds
+
     total_volume += quantity
+
+    # Initialize window start
+    if window_start_time is None:
+        window_start_time = trade_time
+
+    # Window aggregation
+    window_trade_count += 1
+    window_volume += quantity
 
     # Print one sample message
     if not printed_sample:
@@ -24,15 +41,22 @@ def on_message(ws, message):
         printed_sample = True
 
     # Normal counter
-    if trade_count % 100 == 0:
-        avg_size = total_volume / trade_count
+    if trade_time - window_start_time >= WINDOW_SIZE:        
+        if window_trade_count > 0:
+            avg_size = window_volume / window_trade_count
 
-        print(
-            f"trades={trade_count}, "
-            f"last_price={price}, "
-            f"total_volume={total_volume:.4f}, "
-            f"avg_trade_size={avg_size:.6f}"
-        )
+            print(
+                f"[10s window] trades={window_trade_count}, "
+                f"volume={window_volume:.4f}, "            
+                f"avg_trade_size={avg_size:.6f}, "
+                f"last_price={price}"
+            )
+
+        # Reset window
+        window_start_time = trade_time
+        window_trade_count = 0
+        window_volume = 0.0
+
 
 def on_error(ws, error):
     print("error:", error)
