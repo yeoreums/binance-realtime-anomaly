@@ -29,7 +29,7 @@ sec_trade_count = 0
 # =========================
 # CSV setup
 # =========================
-csv_file = open("data/trade_rate.csv", "a", newline="")   # >>> FIX (append mode)
+csv_file = open("data/trade_rate_long.csv", "a", newline="")   # >>> FIX (append mode)
 csv_writer = csv.writer(csv_file)
 
 # Write header only if file is empty
