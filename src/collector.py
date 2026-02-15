@@ -2,6 +2,32 @@ import websocket
 import json
 from datetime import datetime
 import statistics
+from sklearn.ensemble import IsolationForest
+import numpy as np
+import csv
+
+result_file = open("data/window_results.csv", "a", newline="")
+result_writer = csv.writer(result_file)
+
+# write header if file empty
+if result_file.tell() == 0:
+    result_writer.writerow([
+        "timestamp",
+        "trade_count",
+        "volume",
+        "avg_trade_size",
+        "return",
+        "volatility",
+        "score",
+        "prediction"
+    ])
+
+
+# =========================
+# Model
+# =========================
+model = None
+MODEL_TRAINED = False
 
 # =========================
 # Configuration
@@ -38,6 +64,7 @@ def reset_window(trade_time):
 
 def process_window(last_price):
     global window_trade_count, window_volume, window_prices
+    global model, MODEL_TRAINED
 
     if window_trade_count == 0:
         return
@@ -81,7 +108,49 @@ def process_window(last_price):
     if len(feature_buffer) > BUFFER_SIZE:
         feature_buffer.pop(0)
 
-    print(f"buffer_size={len(feature_buffer)}")
+    print(f"buffer_size={len(feature_buffer)}")    
+
+    # Train model when buffer is full (once)
+    if not MODEL_TRAINED and len(feature_buffer) == BUFFER_SIZE:
+        print("Training Isolation Forest...")
+        model = IsolationForest(
+            n_estimators=100,
+            contamination=0.01,   # expect ~1% anomalies
+            random_state=42
+        )
+        X = np.array(feature_buffer)
+        model.fit(X)
+        MODEL_TRAINED = True
+        print("Model trained")
+
+    # Predict anomaly for current window
+    prediction = None
+    score = None
+    
+    if MODEL_TRAINED:
+        X_current = np.array([feature_vector])
+        prediction = model.predict(X_current)[0]  # -1 = anomaly, 1 = normal
+        score = model.decision_function(X_current)[0]
+
+        if prediction == -1:
+            print(f"⚠️ ANOMALY detected | score={score:.4f}")
+        else:
+            print(f"normal | score={score:.4f}")
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    result_writer.writerow([
+        timestamp,
+        window_trade_count,
+        window_volume,
+        avg_trade_size,
+        price_return,
+        volatility,
+        score,
+        prediction
+    ])
+
+    result_file.flush()
 
 
 def on_message(ws, message):
