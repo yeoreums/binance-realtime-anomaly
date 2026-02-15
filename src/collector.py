@@ -12,6 +12,11 @@ WINDOW_SIZE = 20  # seconds
 def on_open(ws):
     print("connected to Binance")
 
+# =========================
+# Feature buffer (for model training later)
+# =========================
+BUFFER_SIZE = 100
+feature_buffer = []
 
 # =========================
 # Window state
@@ -62,6 +67,21 @@ def process_window(last_price):
         f"return={price_return:.6f} "
         f"volatility={volatility:.4f}"
     )
+
+    feature_vector = [
+        window_trade_count,
+        window_volume,
+        avg_trade_size,
+        price_return,
+        volatility,
+    ]
+
+    feature_buffer.append(feature_vector)
+
+    if len(feature_buffer) > BUFFER_SIZE:
+        feature_buffer.pop(0)
+
+    print(f"buffer_size={len(feature_buffer)}")
 
 
 def on_message(ws, message):
