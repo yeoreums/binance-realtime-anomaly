@@ -1,9 +1,17 @@
 import websocket
 import json
 import csv
+import time
+from datetime import datetime, timedelta
 
 def on_open(ws):
     print("connected to Binance")
+
+# =========================
+# Runtime tracking
+# =========================
+start_time = time.time()
+print("Run started at:", datetime.now())
 
 # =========================
 # Overall counters
@@ -21,20 +29,16 @@ sec_trade_count = 0
 # =========================
 # CSV setup
 # =========================
-csv_file = open("trade_rate.csv", "w", newline="")
+csv_file = open("data/trade_rate.csv", "a", newline="")   # >>> FIX (append mode)
 csv_writer = csv.writer(csv_file)
-csv_writer.writerow(["event_time", "trades_per_sec"])
 
-# =========================
-# Measurement duration
-# =========================
-MEASURE_DURATION = 300  # seconds (5 minutes)
-measure_start_time = None
+# Write header only if file is empty
+if csv_file.tell() == 0:
+    csv_writer.writerow(["event_time", "trades_per_sec"])
 
 def on_message(ws, message):
     global trade_count, total_volume, printed_sample
     global sec_start_time, sec_trade_count
-    global measure_start_time
     global csv_file, csv_writer
 
     # Parse JSON message
@@ -48,32 +52,13 @@ def on_message(ws, message):
 
     total_volume += quantity
 
-    # =========================
-    # Initialize measurement start
-    # =========================
-    if measure_start_time is None:
-        measure_start_time = trade_time
-
-    # =========================
-    # Stop after duration
-    # =========================
-    if trade_time - measure_start_time >= MEASURE_DURATION:
-        print("Measurement finished. Closing connection...")
-        csv_file.close()   # >>> NEW
-        ws.close()
-        return
-
-    # =========================
-    # Print one sample message (schema check)
-    # =========================
+    # Print one sample message
     if not printed_sample:
         print("Sample message:")
         print(json.dumps(data, indent=2))
         printed_sample = True
 
-    # =========================
     # 1-second trade rate measurement
-    # =========================
     if sec_start_time is None:
         sec_start_time = trade_time
 
@@ -84,8 +69,9 @@ def on_message(ws, message):
 
         # save to CSV
         csv_writer.writerow([trade_time, sec_trade_count])
-        
-        # reset 1-second counter
+        csv_file.flush()      # >>> NEW (important for long runs)
+
+        # reset counter
         sec_start_time = trade_time
         sec_trade_count = 0
 
@@ -99,11 +85,25 @@ def on_close(ws, close_status_code, close_msg):
 
 
 if __name__ == "__main__":
-    ws = websocket.WebSocketApp(
-        "wss://stream.binance.com:9443/ws/btcusdt@trade",
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
-    )
-    ws.run_forever()
+    try:
+        ws = websocket.WebSocketApp(
+            "wss://stream.binance.com:9443/ws/btcusdt@trade",
+            on_open=on_open,
+            on_message=on_message,
+            on_error=on_error,
+            on_close=on_close,
+        )
+        ws.run_forever()
+
+    except KeyboardInterrupt:
+        print("\nInterrupted by user")
+
+    finally:
+        # >>> NEW: runtime summary
+        end_time = time.time()
+        duration = int(end_time - start_time)
+
+        print("Run stopped at:", datetime.now())
+        print("Total runtime:", timedelta(seconds=duration))
+
+        csv_file.close()
