@@ -5,6 +5,7 @@ import statistics
 from sklearn.ensemble import IsolationForest
 import numpy as np
 import csv
+from sklearn.preprocessing import StandardScaler
 
 result_file = open("data/window_results.csv", "a", newline="")
 result_writer = csv.writer(result_file)
@@ -27,6 +28,7 @@ if result_file.tell() == 0:
 # Model
 # =========================
 model = None
+scaler = None
 MODEL_TRAINED = False
 
 # =========================
@@ -64,7 +66,7 @@ def reset_window(trade_time):
 
 def process_window(last_price):
     global window_trade_count, window_volume, window_prices
-    global model, MODEL_TRAINED
+    global model, scaler, MODEL_TRAINED
 
     if window_trade_count == 0:
         return
@@ -112,14 +114,23 @@ def process_window(last_price):
 
     # Train model when buffer is full (once)
     if not MODEL_TRAINED and len(feature_buffer) == BUFFER_SIZE:
-        print("Training Isolation Forest...")
+        print("Training Isolation Forest with StandardScaler...")
+
+        # Initialize scaler
+        scaler = StandardScaler()
+        X = np.array(feature_buffer)
+
+        # Fit scaler and transform data
+        X_scaled = scaler.fit_transform(X)
+
+        # Train model
         model = IsolationForest(
             n_estimators=100,
             contamination=0.01,   # expect ~1% anomalies
             random_state=42
         )
-        X = np.array(feature_buffer)
-        model.fit(X)
+        model.fit(X_scaled)
+
         MODEL_TRAINED = True
         print("Model trained")
 
@@ -129,8 +140,12 @@ def process_window(last_price):
     
     if MODEL_TRAINED:
         X_current = np.array([feature_vector])
-        prediction = model.predict(X_current)[0]  # -1 = anomaly, 1 = normal
-        score = model.decision_function(X_current)[0]
+
+        # Scale using the same scaler
+        X_scaled = scaler.transform(X_current)
+
+        prediction = model.predict(X_scaled)[0]
+        score = model.decision_function(X_scaled)[0]
 
         if prediction == -1:
             print(f"⚠️ ANOMALY detected | score={score:.4f}")
