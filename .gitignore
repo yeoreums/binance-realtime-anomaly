@@ -1,3 +1,11 @@
+# Python
 .venv/
 __pycache__/
+*.pyc
+
+# Data and outputs
 data/*.csv
+
+# Runtime logs
+collector.log
+*.log
