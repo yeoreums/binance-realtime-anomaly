@@ -1,0 +1,16 @@
+
+==============================
+Timestamp: 2026-02-19 15:53:25.319402
+Total scored windows: 443
+Anomalies: 0
+Anomaly rate: 0.0000
+
+Score statistics:
+count    443.000000
+mean       0.315677
+std        0.048619
+min        0.000000
+25%        0.286636
+50%        0.327547
+75%        0.351608
+max        0.379982
