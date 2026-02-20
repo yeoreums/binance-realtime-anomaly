@@ -6,6 +6,7 @@ from sklearn.ensemble import IsolationForest
 import numpy as np
 import csv
 from sklearn.preprocessing import StandardScaler
+import time
 
 result_file = open("data/window_results.csv", "a", newline="")
 result_writer = csv.writer(result_file)
@@ -201,12 +202,26 @@ def on_close(ws, close_status_code, close_msg):
 
 
 if __name__ == "__main__":
-    ws = websocket.WebSocketApp(
-        "wss://stream.binance.com:9443/ws/btcusdt@trade",
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
-    )
+    url = "wss://stream.binance.com:9443/ws/btcusdt@trade"
 
-    ws.run_forever()
+    while True:
+        print("Starting WebSocket connection...")
+
+        ws = websocket.WebSocketApp(
+            url,
+            on_open=on_open,
+            on_message=on_message,
+            on_error=on_error,
+            on_close=on_close,
+        )
+
+        try:
+            ws.run_forever()
+        except Exception as e:
+            print("run_forever exception:", e)
+
+        print("Connection lost. Reconnecting in 5 seconds...")
+        time.sleep(5)
+
+    result_file.close()
+    print("Result file closed.")
