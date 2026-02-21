@@ -14,3 +14,35 @@ min        0.000000
 50%        0.327547
 75%        0.351608
 max        0.379982
+
+==============================
+Timestamp: 2026-02-19 17:06:17.498957
+Total scored windows: 54
+Anomalies: 0
+Anomaly rate: 0.0000
+
+Score statistics:
+count    54.000000
+mean      0.259755
+std       0.072524
+min       0.061599
+25%       0.224607
+50%       0.275421
+75%       0.313001
+max       0.364583
+
+==============================
+Timestamp: 2026-02-21 17:19:26.295384
+Total scored windows: 1849
+Anomalies: 82
+Anomaly rate: 0.0443
+
+Score statistics:
+count    1849.000000
+mean        0.222759
+std         0.096722
+min        -0.093361
+25%         0.178217
+50%         0.258616
+75%         0.294510
+max         0.332796
