@@ -1,0 +1,15 @@
+Timestamp: 2026-02-23 15:20:48.175540
+
+Using lookahead: 5 min (15 windows)
+
+Average future move (absolute):
+Normal  : 0.001394078646862413
+Anomaly : 0.003005812296297726
+
+Median future move (absolute):
+Normal  : 0.0009591831318928338
+Anomaly : 0.002183947145119329
+
+Sample counts:
+Normal  : 1752
+Anomaly : 82
