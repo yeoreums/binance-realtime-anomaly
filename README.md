@@ -1,24 +1,49 @@
 # Binance Realtime Anomaly Detection
 
-Realtime anomaly detection on BTCUSDT trades using Binance WebSocket, window-based feature engineering, and Isolation Forest.
+Realtime anomaly detection on BTCUSDT using Binance WebSocket, window-based feature engineering, and Isolation Forest.
 
-## Overview
-
-This project streams live trade data from Binance and aggregates it into time windows.
-For each window, market activity features are calculated and evaluated using an anomaly detection model.
-
-The system is designed to run continuously and collect data for analysis and model calibration.
+This project builds a continuous market monitoring system and validates whether detected anomalies lead to abnormal future market movement.
 
 ---
 
-## Features
+## Overview
 
-**Data source**
+Live trade data is streamed from Binance and aggregated into fixed time windows.
+For each window, market activity features are calculated and evaluated using an anomaly detection model.
+
+The system runs continuously to collect long-horizon data for signal validation.
+
+Goal:
+
+Detect **market regime changes** (unusual activity) and evaluate whether they precede increased price movement.
+
+---
+
+## Motivation
+
+This project was inspired by limitations observed in a previous real-time monitoring system built on Upbit trade streams.
+
+The earlier system relied on SMA-based thresholds for anomaly detection, which worked for basic price monitoring but produced frequent false signals and failed to capture sudden market regime changes driven by trading activity rather than price level.
+
+That system was part of the following project:
+[Upbit Data Pipeline (team project)](https://github.com/DE7-team6-final/upbit-data-pipeline)
+
+Based on these observations, the current system focuses on **behavior-based detection**, using trade intensity, volume, and volatility features combined with an unsupervised anomaly detection model.
+
+The objective is to detect **market activity regime shifts** and validate whether these events precede abnormal future price movement.
+
+---
+
+## Data Source
 
 * Binance WebSocket: `btcusdt@trade`
-* Uses exchange event timestamp (not system time)
+* Uses **exchange event timestamp** (not system time)
 
-**Window aggregation (20s)**
+---
+
+## Window Features (20 seconds)
+
+For each window:
 
 * Trade count
 * Total volume
@@ -26,16 +51,19 @@ The system is designed to run continuously and collect data for analysis and mod
 * Price return
 * Price volatility
 
-**Model**
+Window size was selected based on variability analysis (coefficient of variation).
 
-* StandardScaler
-* Isolation Forest
-* Trained after initial buffer
-* Real-time scoring per window
+---
 
-**Output**
+## Model
 
-* Results saved to:
+Isolation Forest
+
+* Trained after initial buffer collection
+* Real-time scoring for each window
+* Outputs anomaly prediction (-1 / 1) and score
+
+Results saved to:
 
 ```
 data/window_results.csv
@@ -43,9 +71,23 @@ data/window_results.csv
 
 ---
 
+## Key Finding (Signal Validation)
+
+Pre-move analysis shows:
+
+After anomaly windows, the **average absolute price move in the next 5 minutes is ~2× larger** than normal periods.
+
+Interpretation:
+
+The model detects **volatility regime shifts**, not direction.
+
+This acts as a **market risk / activity signal** rather than a trading signal.
+
+---
+
 ## Setup
 
-Create virtual environment and install dependencies:
+Create environment and install dependencies:
 
 ```
 python -m venv .venv
@@ -57,25 +99,20 @@ pip install -r requirements.txt
 
 ## Run Collector
 
-Run in background:
+Run continuously in background:
 
 ```
 nohup python -u src/collector.py > collector.log 2>&1 &
 ```
 
-Monitor logs:
+Monitor:
 
 ```
 tail -f collector.log
-```
-
-Check data growth:
-
-```
 wc -l data/window_results.csv
 ```
 
-Stop the process:
+Stop:
 
 ```
 ps aux | grep collector.py
@@ -86,22 +123,34 @@ kill <PID>
 
 ## Analysis Scripts
 
+Anomaly statistics:
+
+```
+python scripts/analyze_results.py
+```
+
+Score distribution:
+
+```
+python scripts/check_scores.py
+```
+
 Save score summary:
 
 ```
 python scripts/save_score_summary.py
 ```
 
-Check anomaly rate:
+Pre-move (lead-lag validation):
 
 ```
-python scripts/analyze_results.py
+python scripts/check_pre_move.py
 ```
 
-Check score distribution:
+Results are appended to:
 
 ```
-python scripts/check_scores.py
+reports/pre_move_log.txt
 ```
 
 ---
@@ -116,9 +165,10 @@ scripts/
     analyze_results.py
     check_scores.py
     save_score_summary.py
+    check_pre_move.py
 
 data/        # collected results (gitignored)
-analysis/    # experiment summaries
+reports/     # experiment logs
 collector.log
 ```
 
@@ -126,7 +176,7 @@ collector.log
 
 ## Notes
 
-* Window size selected based on data variability analysis (CV)
 * Designed for long-running data collection
-* Logs and raw data are excluded from version control
-* Model sensitivity is evaluated through score distribution and anomaly rate
+* Raw data and logs are excluded from version control
+* Current system focuses on **behavior-based anomaly detection**
+* Future work: horizon comparison, directional analysis, feature expansion
