@@ -71,17 +71,36 @@ data/window_results.csv
 
 ---
 
-## Key Finding (Signal Validation)
+## Key Findings (Signal Validation)
 
-Pre-move analysis shows:
+### 1. Isolation Forest detects behavioral anomalies beyond volatility
+A baseline comparison against a simple volatility threshold (mean + 2×std) shows:
+- 55 windows flagged by both methods
+- 27 windows flagged by IF only (normal volatility, unusual trade behavior)
+- Jaccard similarity: 0.567
 
-After anomaly windows, the **average absolute price move in the next 5 minutes is ~2× larger** than normal periods.
+33% of IF anomalies occur in normal-volatility conditions, indicating the model
+captures order-flow microstructure signals invisible to threshold-based methods.
+
+### 2. All anomaly types precede larger future price moves (5-min lookahead)
+
+| Group    | Mean abs move | vs Normal |
+|----------|--------------|-----------|
+| Normal   | 0.005511     | 1.00x     |
+| VOL-only | 0.009147     | 1.66x     |
+| IF-only  | 0.008027     | 1.46x     |
+| Both     | 0.010719     | 1.94x     |
+
+IF-only anomalies — detected during calm volatility — precede 1.46× larger moves
+than baseline. When both signals coincide, the effect reaches 1.94×.
 
 Interpretation:
+The model detects **behavioral regime shifts** (order fragmentation, activity bursts),
+not just price volatility. This acts as a **market activity signal** rather than a
+directional trading signal.
 
-The model detects **volatility regime shifts**, not direction.
-
-This acts as a **market risk / activity signal** rather than a trading signal.
+> Note: Based on ~1,849 windows (one session). Findings are preliminary pending
+> longer data collection.
 
 ---
 
@@ -152,6 +171,14 @@ Results are appended to:
 ```
 reports/pre_move_log.txt
 ```
+Baseline comparison (IF vs volatility threshold):
+```
+python scripts/baseline_comparison.py
+```
+Results are appended to:
+```
+reports/baseline_comparison_log.txt
+```
 
 ---
 
@@ -179,4 +206,4 @@ collector.log
 * Designed for long-running data collection
 * Raw data and logs are excluded from version control
 * Current system focuses on **behavior-based anomaly detection**
-* Future work: horizon comparison, directional analysis, feature expansion
+* Future work: extended data collection, hour-of-day normalization, contamination retuning, directional analysis
