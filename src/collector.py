@@ -127,7 +127,7 @@ def process_window(last_price):
         # Train model
         model = IsolationForest(
             n_estimators=100,
-            contamination=0.01,   # expect ~1% anomalies
+            contamination=0.05,     # updated from 0.01, matches observed anomaly rate
             random_state=42
         )
         model.fit(X_scaled)
