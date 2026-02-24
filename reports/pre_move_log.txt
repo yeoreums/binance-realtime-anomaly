@@ -13,3 +13,45 @@ Anomaly : 0.002183947145119329
 Sample counts:
 Normal  : 1752
 Anomaly : 82
+
+==================================================
+Timestamp: 2026-02-24 15:11:26.003686
+==================================================
+Total windows: 1948
+Windows with predictions: 1849
+Lookahead: 5 min (15 windows)
+Vol threshold: 38.1836
+
+Group counts:
+group
+normal      1752
+both          55
+if_only       27
+vol_only      15
+
+=== Pre-move analysis by group ===
+
+normal (n=1737):
+  mean abs move : 0.005511
+  median abs move: 0.004784
+  std            : 0.003396
+
+vol_only (n=15):
+  mean abs move : 0.009147
+  median abs move: 0.008755
+  std            : 0.003213
+
+if_only (n=27):
+  mean abs move : 0.008027
+  median abs move: 0.007565
+  std            : 0.003958
+
+both (n=55):
+  mean abs move : 0.010719
+  median abs move: 0.010078
+  std            : 0.003981
+
+=== Ratio vs normal ===
+vol_only: 1.66x normal
+if_only: 1.46x normal
+both: 1.94x normal
