@@ -63,11 +63,13 @@ Isolation Forest
 * Real-time scoring for each window
 * Outputs anomaly prediction (-1 / 1) and score
 
-Results saved to:
+Results saved daily to:
 
 ```
-data/window_results.csv
+data/window_results_YYYY-MM-DD.csv
 ```
+
+Daily rotation prevents unbounded file growth and supports long-running collection.
 
 ---
 
@@ -116,27 +118,47 @@ pip install -r requirements.txt
 
 ---
 
-## Run Collector
+## Run with Docker (recommended)
+
+Build image:
+
+```
+docker build -t binance-realtime-anomaly .
+```
 
 Run continuously in background:
+
+```
+docker run -d
+--name anomaly
+-v $(pwd)/data:/app/data
+-v $(pwd)/reports:/app/reports
+binance-realtime-anomaly
+```
+
+view logs:
+```
+docker logs -f anomaly
+```
+
+Stop:
+```
+docker stop anomaly
+docker rm anomaly    # removes container instance (data is preserved)
+```
+
+
+Collected data is stored locally under the `data/` directory.
+
+---
+
+### Run locally (optional)
 
 ```
 nohup python -u src/collector.py > collector.log 2>&1 &
 ```
 
-Monitor:
-
-```
-tail -f collector.log
-wc -l data/window_results.csv
-```
-
-Stop:
-
-```
-ps aux | grep collector.py
-kill <PID>
-```
+This mode is mainly for development.
 
 ---
 
