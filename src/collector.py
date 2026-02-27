@@ -7,12 +7,22 @@ import numpy as np
 import csv
 from sklearn.preprocessing import StandardScaler
 import time
+import os
 
-result_file = open("data/window_results.csv", "a", newline="")
+# Ensure data directory exists
+os.makedirs("data", exist_ok=True)
+
+# Daily file name
+today_str = datetime.now().strftime("%Y-%m-%d")
+file_path = f"data/window_results_{today_str}.csv"
+
+file_exists = os.path.exists(file_path)
+
+result_file = open(file_path, "a", newline="")
 result_writer = csv.writer(result_file)
 
-# write header if file empty
-if result_file.tell() == 0:
+# Write header only if new file
+if not file_exists:
     result_writer.writerow([
         "timestamp",
         "trade_count",
@@ -23,6 +33,8 @@ if result_file.tell() == 0:
         "score",
         "prediction"
     ])
+
+print(f"Writing results to: {file_path}")
 
 
 # =========================
