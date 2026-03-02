@@ -48,16 +48,18 @@ MODEL_TRAINED = False
 # Configuration
 # =========================
 WINDOW_SIZE = 20  # seconds
+BUFFER_SIZE = 500       # ~2.8 hours of training data
+RETRAIN_EVERY = 100     # retrain every 100 windows (~33 min)
 
 
 def on_open(ws):
     print("connected to Binance")
 
 # =========================
-# Feature buffer (for model training later)
+# Feature buffer
 # =========================
-BUFFER_SIZE = 100
 feature_buffer = []
+windows_since_retrain = 0
 
 # =========================
 # Window state
@@ -123,29 +125,38 @@ def process_window(last_price):
     if len(feature_buffer) > BUFFER_SIZE:
         feature_buffer.pop(0)
 
-    print(f"buffer_size={len(feature_buffer)}")    
+    print(f"buffer_size={len(feature_buffer)}")
 
-    # Train model when buffer is full (once)
-    if not MODEL_TRAINED and len(feature_buffer) == BUFFER_SIZE:
+    global windows_since_retrain
+
+    should_train = (
+        not MODEL_TRAINED and len(feature_buffer) == BUFFER_SIZE
+    ) or (
+        MODEL_TRAINED and
+        len(feature_buffer) == BUFFER_SIZE and
+        windows_since_retrain >= RETRAIN_EVERY
+    )
+
+    if should_train:
         print("Training Isolation Forest with StandardScaler...")
-
-        # Initialize scaler
         scaler = StandardScaler()
         X = np.array(feature_buffer)
-
-        # Fit scaler and transform data
         X_scaled = scaler.fit_transform(X)
 
-        # Train model
         model = IsolationForest(
             n_estimators=100,
-            contamination=0.05,     # updated from 0.01, matches observed anomaly rate
+            contamination=0.05,
             random_state=42
         )
         model.fit(X_scaled)
 
         MODEL_TRAINED = True
-        print("Model trained")
+        windows_since_retrain = 0
+        print(f"Model retrained on last {len(feature_buffer)} windows")
+
+    # Only count after model exists
+    if MODEL_TRAINED:
+        windows_since_retrain += 1
 
     # Predict anomaly for current window
     prediction = None
