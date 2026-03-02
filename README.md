@@ -113,6 +113,12 @@ Pre-move analysis on a full-day dataset (~5,494 scored windows):
 | IF-only | 0.006360     | 1.37x     |
 | Both    | 0.008927     | 1.92x     |
 
+**Statistical significance (Mann-Whitney U test):**
+- if_only vs normal: p < 0.001 ✓
+- both vs normal: p < 0.001 ✓
+
+Signal is statistically significant across 5,494 windows.
+
 Observations:
 
 - **No volatility-only windows** were observed.
@@ -187,60 +193,67 @@ This mode is mainly for development.
 ## Analysis Scripts
 
 Anomaly statistics:
-
 ```
-python scripts/analyze_results.py
+python scripts/analysis/analyze_results.py
 ```
 
 Score distribution:
-
 ```
-python scripts/check_scores.py
-```
-
-Save score summary:
-
-```
-python scripts/save_score_summary.py
+python scripts/analysis/check_scores.py
 ```
 
-Pre-move (lead-lag validation):
+Pre-move lead-lag validation:
+```
+python scripts/analysis/check_pre_move.py
+```
 
+Pre-move by anomaly type (three-group analysis):
 ```
-python scripts/check_pre_move.py
+python scripts/analysis/check_pre_move_by_type.py
 ```
 
-Results are appended to:
-
-```
-reports/pre_move_log.txt
-```
 Baseline comparison (IF vs volatility threshold):
 ```
-python scripts/baseline_comparison.py
+python scripts/analysis/compare_baseline.py
 ```
-Results are appended to:
+
+Anomaly rate by hour:
 ```
-reports/baseline_comparison_log.txt
+python scripts/diagnostics/check_anomaly_by_hour.py
 ```
+
+Results are appended to `reports/`.
 
 ---
 
 ## Project Structure
-
 ```
 src/
-    collector.py
+    collector.py          # main streaming collector
 
 scripts/
-    analyze_results.py
-    check_scores.py
-    save_score_summary.py
-    check_pre_move.py
+    analysis/
+        analyze_results.py
+        check_pre_move.py
+        check_pre_move_by_type.py
+        check_scores.py
+        compare_baseline.py
+    diagnostics/
+        check_anomaly_by_hour.py
+        measure_rate.py
+    experiments/
+        analyze_event_specific_time.py
+        analyze_events.py
+        analyze_window.py
+        save_score_summary.py
 
-data/        # collected results (gitignored)
-reports/     # experiment logs
-collector.log
+data/
+    raw/                  # collected results (gitignored)
+    samples/              # sample data for reference
+
+reports/                  # experiment logs
+logs/                     # collector logs
+docs/
 ```
 
 ---
