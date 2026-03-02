@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import os
+from scipy import stats
 
 os.makedirs("reports", exist_ok=True)
 report_path = "reports/pre_move_log.txt"
@@ -79,6 +80,17 @@ for group in ["vol_only", "if_only", "both"]:
         continue
     ratio = subset.mean() / normal_mean if normal_mean else float("nan")
     log(f"{group}: {ratio:.2f}x normal")
+
+normal_moves = df[df["group"] == "normal"]["future_abs_move"].dropna()
+if_only_moves = df[df["group"] == "if_only"]["future_abs_move"].dropna()
+both_moves = df[df["group"] == "both"]["future_abs_move"].dropna()
+
+stat1, p1 = stats.mannwhitneyu(if_only_moves, normal_moves, alternative="greater")
+stat2, p2 = stats.mannwhitneyu(both_moves, normal_moves, alternative="greater")
+
+log(f"\n=== Statistical significance ===")
+log(f"if_only vs normal : p={p1:.6f} {'✓ SIGNIFICANT' if p1 < 0.05 else '✗ not significant'}")
+log(f"both vs normal    : p={p2:.6f} {'✓ SIGNIFICANT' if p2 < 0.05 else '✗ not significant'}")
 
 report_file.close()
 print(f"\nAppended to {report_path}")
