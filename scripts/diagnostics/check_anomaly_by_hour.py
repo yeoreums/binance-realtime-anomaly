@@ -16,7 +16,7 @@ log(f"Timestamp: {datetime.now()}")
 log("="*50)
 
 # ---------- load data ----------
-file_path = "data/window_results_2026-02-28.csv"   # change if needed
+file_path = "data/raw/window_results_2026-02-28.csv"
 
 df = pd.read_csv(file_path)
 log(f"Total rows: {len(df)}")

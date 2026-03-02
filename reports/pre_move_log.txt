@@ -55,3 +55,57 @@ both (n=55):
 vol_only: 1.66x normal
 if_only: 1.46x normal
 both: 1.94x normal
+
+==================================================
+Timestamp: 2026-03-02 15:29:23.867651
+==================================================
+Using lookahead: 5 min (15 windows)
+
+Average future move (absolute):
+Normal  : 0.0014134521707160309
+Anomaly : 0.0018269101775684616
+
+Median future move (absolute):
+Normal  : 0.0009208428626415302
+Anomaly : 0.0013217349969213543
+
+Sample counts:
+Normal  : 4594
+Anomaly : 885
+
+==================================================
+Timestamp: 2026-03-02 15:30:43.165660
+==================================================
+Total windows: 5593
+Windows with predictions: 5494
+Lookahead: 5 min (15 windows)
+Vol threshold: 29.0319
+
+Group counts:
+group
+normal     4608
+if_only     691
+both        195
+
+=== Pre-move analysis by group ===
+
+normal (n=4594):
+  mean abs move : 0.004649
+  median abs move: 0.004112
+  std            : 0.002555
+
+vol_only: no samples
+
+if_only (n=690):
+  mean abs move : 0.006360
+  median abs move: 0.005471
+  std            : 0.003405
+
+both (n=195):
+  mean abs move : 0.008927
+  median abs move: 0.008337
+  std            : 0.004251
+
+=== Ratio vs normal ===
+if_only: 1.37x normal
+both: 1.92x normal

@@ -101,8 +101,30 @@ The model detects **behavioral regime shifts** (order fragmentation, activity bu
 not just price volatility. This acts as a **market activity signal** rather than a
 directional trading signal.
 
-> Note: Based on ~1,849 windows (one session). Findings are preliminary pending
-> longer data collection.
+### 3. Model behavior after sensitivity tuning (contamination = 0.05)
+
+Using a higher contamination level (~5%) increased the anomaly rate to ~16% and broadened the detection boundary.
+
+Pre-move analysis on a full-day dataset (~5,494 scored windows):
+
+| Group   | Mean abs move | vs Normal |
+|---------|--------------|-----------|
+| Normal  | 0.004649     | 1.00x     |
+| IF-only | 0.006360     | 1.37x     |
+| Both    | 0.008927     | 1.92x     |
+
+Observations:
+
+- **No volatility-only windows** were observed.
+- All high-volatility periods were captured by Isolation Forest.
+- IF-only anomalies (normal volatility but unusual trading behavior) still precede significantly larger future moves.
+- When both volatility and behavioral signals coincide, the effect is strongest.
+
+Interpretation:
+
+The model now operates as a **broad market regime detector**, capturing both volatility spikes and behavioral structure changes rather than rare outliers.
+
+> Findings are based on multiple sessions (up to ~5,500 windows). Signal strength remains consistent across extended data, though performance varies by market session.
 
 ---
 
@@ -129,11 +151,11 @@ docker build -t binance-realtime-anomaly .
 Run continuously in background:
 
 ```
-docker run -d
---name anomaly
--v $(pwd)/data:/app/data
--v $(pwd)/reports:/app/reports
-binance-realtime-anomaly
+docker run -d \
+  --name anomaly \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/reports:/app/reports \
+  binance-realtime-anomaly
 ```
 
 view logs:

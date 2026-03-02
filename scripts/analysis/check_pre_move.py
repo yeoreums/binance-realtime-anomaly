@@ -17,7 +17,7 @@ log(f"Timestamp: {datetime.now()}")
 log("="*50)
 
 # Load data
-df = pd.read_csv("data/window_results.csv")
+df = pd.read_csv("data/raw/window_results_2026-02-28.csv")
 df = df[df["prediction"].notna()]
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 

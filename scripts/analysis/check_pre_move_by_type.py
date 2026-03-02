@@ -15,7 +15,7 @@ log("\n" + "="*50)
 log(f"Timestamp: {datetime.now()}")
 log("="*50)
 
-df = pd.read_csv("data/window_results.csv")
+df = pd.read_csv("data/raw/window_results_2026-02-28.csv")
 log(f"Total windows: {len(df)}")
 
 df = df[df["prediction"].notna()]
