@@ -16,9 +16,8 @@ log(f"Timestamp: {datetime.now()}")
 log("="*50)
 
 # ---------- load data ----------
-file_path = "data/raw/window_results_2026-02-28.csv"
-
-df = pd.read_csv(file_path)
+today = datetime.now().strftime("%Y-%m-%d")
+df = pd.read_csv(f"data/window_results_{today}.csv")
 log(f"Total rows: {len(df)}")
 
 # keep scored only

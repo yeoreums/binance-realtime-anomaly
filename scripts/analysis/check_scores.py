@@ -1,7 +1,9 @@
 import pandas as pd
+from datetime import datetime
 
 # Load data
-df = pd.read_csv("data/raw/window_results_2026-02-28.csv")
+today = datetime.now().strftime("%Y-%m-%d")
+df = pd.read_csv(f"data/window_results_{today}.csv")
 
 # Remove rows before model was trained (score = None)
 df = df[df["score"].notna()]

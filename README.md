@@ -57,11 +57,15 @@ Window size was selected based on variability analysis (coefficient of variation
 
 ## Model
 
-Isolation Forest
+Isolation Forest with feature standardization.
 
-* Trained after initial buffer collection
+* Window features are standardized using **StandardScaler**
+* Model trained after an initial buffer collection (**500 windows ≈ 2.8 hours**)
+* **Rolling retrain every 100 windows (~33 minutes)** to handle concept drift
 * Real-time scoring for each window
-* Outputs anomaly prediction (-1 / 1) and score
+* Outputs anomaly prediction (-1 / 1) and anomaly score
+
+Rolling retraining allows the model to adapt to evolving market regimes while maintaining a stable anomaly rate.
 
 Results saved daily to:
 
@@ -261,6 +265,7 @@ docs/
 ## Notes
 
 * Designed for long-running data collection
+* Deployed on **GCP Compute Engine** for continuous 24/7 operation
 * Raw data and logs are excluded from version control
 * Current system focuses on **behavior-based anomaly detection**
-* Future work: extended data collection, hour-of-day normalization, contamination retuning, directional analysis
+* Future work: hour-of-day normalization, multi-horizon lookahead, order book features
