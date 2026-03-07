@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import os
+import glob
 from scipy import stats
 
 os.makedirs("reports", exist_ok=True)
@@ -16,8 +17,18 @@ log("\n" + "="*50)
 log(f"Timestamp: {datetime.now()}")
 log("="*50)
 
-today = datetime.now().strftime("%Y-%m-%d")
-df = pd.read_csv(f"data/window_results_{today}.csv")
+# ---------- Load latest data file ---------
+files = glob.glob("data/window_results_*.csv")
+
+if not files:
+    log("No data files found.")
+    report_file.close()
+    exit()
+
+latest_file = max(files)
+log(f"Reading file: {latest_file}")
+
+df = pd.read_csv(latest_file)
 log(f"Total windows: {len(df)}")
 
 df = df[df["prediction"].notna()]

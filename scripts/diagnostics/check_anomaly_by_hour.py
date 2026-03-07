@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import glob
 from datetime import datetime
 
 # ---------- setup logging ----------
@@ -15,9 +16,18 @@ log("\n" + "="*50)
 log(f"Timestamp: {datetime.now()}")
 log("="*50)
 
-# ---------- load data ----------
-today = datetime.now().strftime("%Y-%m-%d")
-df = pd.read_csv(f"data/window_results_{today}.csv")
+# ---------- load latest data file ----------
+files = glob.glob("data/window_results_*.csv")
+
+if not files:
+    log("No data files found.")
+    log_file.close()
+    exit()
+
+latest_file = max(files)
+log(f"Reading file: {latest_file}")
+
+df = pd.read_csv(latest_file)
 log(f"Total rows: {len(df)}")
 
 # keep scored only
@@ -37,6 +47,7 @@ log(hourly_rate.sort_index().to_string())
 
 # ---------- counts by hour ----------
 hourly_counts = df.groupby("hour")["prediction"].count()
+
 log("\nWindow count by hour:")
 log(hourly_counts.sort_index().to_string())
 

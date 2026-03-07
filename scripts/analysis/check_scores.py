@@ -1,15 +1,19 @@
 import pandas as pd
-from datetime import datetime
+import glob
+import sys
 
-# Load data
-today = datetime.now().strftime("%Y-%m-%d")
-df = pd.read_csv(f"data/window_results_{today}.csv")
+files = glob.glob("data/window_results_*.csv")
 
-# Remove rows before model was trained (score = None)
+if not files:
+    print("No data files found")
+    sys.exit()
+
+latest_file = max(files)
+print("Reading:", latest_file)
+
+df = pd.read_csv(latest_file)
 df = df[df["score"].notna()]
 
 print("Total scored windows:", len(df))
 print()
-
-print("Score statistics:")
 print(df["score"].describe())
