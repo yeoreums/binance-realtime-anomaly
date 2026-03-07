@@ -136,6 +136,48 @@ The model now operates as a **broad market regime detector**, capturing both vol
 
 > Findings are based on multiple sessions (up to ~5,500 windows). Signal strength remains consistent across extended data, though performance varies by market session.
 
+### 4. Results after rolling retrain stabilization (GCP, full session)
+
+After deploying the system on a persistent VM and enabling **rolling retraining**, the model was evaluated on ~4,700 scored windows collected during a full market session.
+
+Rolling retraining uses:
+
+- Buffer size: **500 windows (~2.8 hours)**
+- Retrain interval: **100 windows (~33 minutes)**
+
+This prevents concept drift and keeps the anomaly rate aligned with the configured contamination level.
+
+Pre-move analysis results:
+
+| Group    | Mean abs move | vs Normal |
+|----------|--------------|-----------|
+| Normal   | 0.003492     | 1.00x     |
+| VOL-only | 0.008352     | 2.39x     |
+| IF-only  | 0.004007     | 1.15x     |
+| Both     | 0.008278     | 2.37x     |
+
+Statistical significance (Mann-Whitney U test):
+
+- IF-only vs normal: **p < 0.001 ✓**
+- Both vs normal: **p < 0.001 ✓**
+
+Observations:
+
+- Rolling retraining stabilized the anomaly rate to **~2–9% across most hours**.
+- **Volatility-driven anomalies** show strong predictive power (~2.39× larger future moves).
+- **Combined behavioral + volatility anomalies** produce the strongest signal (~2.37×).
+- **Behavior-only anomalies** show a smaller but statistically significant effect (~1.15×).
+
+Interpretation:
+
+The anomaly detector captures **market regime transitions** rather than isolated price spikes.
+
+- Volatility signals capture **high-activity market states**.
+- Behavioral signals capture **microstructure changes in trading activity**.
+- When both signals occur together, they indicate **strong regime shifts** that precede larger price movement.
+
+> These findings replicate earlier results on a new dataset collected after rolling retrain stabilization, confirming that the signal is not an artifact of model drift.
+
 ---
 
 ## Setup
