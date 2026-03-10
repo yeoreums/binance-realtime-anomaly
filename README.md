@@ -166,9 +166,49 @@ p < 0.001 for IF-only and Both vs Normal
 
 Signal ratios converged across datasets, confirming the finding is **not an artifact of small sample size**.
 
+## 4. Signal decay across time horizons
+
+To understand how long the anomaly signal persists, future volatility was evaluated across multiple horizons.
+
+Future movement is measured as the **sum of absolute returns over the following windows**.
+
+| Horizon    | VOL-only | IF-only | Both  |
+| ---------- | -------- | ------- | ----- |
+| 1 minute   | 2.18×    | 1.33×   | 2.35× |
+| 5 minutes  | 2.00×    | 1.18×   | 2.00× |
+| 15 minutes | 1.89×    | 1.09×   | 1.79× |
+| 30 minutes | 1.77×    | 1.05×   | 1.67× |
+
+Statistical tests (Mann–Whitney U):
+
+• **VOL-only anomalies remain highly significant across all horizons**
+
+• **IF-only anomalies remain significant up to ~15 minutes**
+
+• **Behavior-only signal disappears by 30 minutes**
+
+### Signal decay visualization
+
+![Multi-horizon anomaly signal](reports/multi_horizon_signal.png)
+
+### Interpretation
+
+The anomaly signal is **strongest immediately after detection and gradually decays over time**.
+
+Key observations:
+
+• **Volatility anomalies** correspond to sustained high-activity market regimes.
+
+• **Behavior-only anomalies** represent subtle microstructure shifts that tend to resolve quickly.
+
+• **Combined anomalies** indicate strong market regime transitions and produce the largest volatility expansion.
+
+These results suggest the anomaly detector acts primarily as a **short-term market activity signal**, rather than a long-horizon regime predictor.
+
+
 ---
 
-# Interpretation
+# Overall Interpretation
 
 • **Volatility anomalies** correspond to high-activity market regimes and precede roughly **2× larger price movement**.
 
@@ -323,7 +363,6 @@ docs/
 Possible extensions:
 
 • Hour-of-day normalization
-• Multi-horizon lookahead analysis (1m / 15m / 30m)
 • Order book depth features
 • Multi-asset anomaly detection
 • Anomaly clustering and regime classification
