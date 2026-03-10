@@ -79,7 +79,7 @@ def reset_window(trade_time):
     window_prices = []
 
 
-def process_window(last_price):
+def process_window(last_price, trade_time):
     global window_trade_count, window_volume, window_prices
     global model, scaler, MODEL_TRAINED
 
@@ -104,7 +104,7 @@ def process_window(last_price):
 
     print(
         f"[20s window] "
-        f"time={datetime.now().strftime('%H:%M:%S')} "
+        f"time={datetime.fromtimestamp(trade_time).strftime('%H:%M:%S')} "
         f"trades={window_trade_count} "
         f"volume={window_volume:.4f} "
         f"avg_size={avg_trade_size:.6f} "
@@ -176,7 +176,7 @@ def process_window(last_price):
         else:
             print(f"normal | score={score:.4f}")
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.fromtimestamp(trade_time).strftime("%Y-%m-%d %H:%M:%S")
 
     result_writer.writerow([
         timestamp,
@@ -197,6 +197,9 @@ def on_message(ws, message):
 
     data = json.loads(message)
 
+    if "p" not in data:
+        return
+
     price = float(data["p"])
     quantity = float(data["q"])
     trade_time = data["T"] / 1000  # event time
@@ -207,7 +210,7 @@ def on_message(ws, message):
 
     # Check if window ended
     if trade_time - window_start_time >= WINDOW_SIZE:
-        process_window(price)
+        process_window(price, trade_time)
         reset_window(trade_time)
 
     # Aggregate trade
